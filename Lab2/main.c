@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <lpc17xx.h>
 
 void partOne()
@@ -67,10 +68,93 @@ void partTwo()
 	}
 }
 
+/**
+ * Converts a hexademical digit to its integer value.
+ * @param h ascii character representing a hexadecimal digit
+ * @return value of hexadecimal digit or -1 on error
+ */
+int8_t hToI(char h) {
+	//if(!c_assert((h>='0' && h<='9') || (h>='A' && h<='F'))) return -1;
+	if(h>='0' && h<='9') return h - '0';
+	if(h>='A' && h<='F') return h - 'A' + 10;
+    return 0;
+}
+
+/**
+ * Converts an integer to its hexademical character representation.
+ * @param i integer in range [0,15]
+ * @return ascii code of hexademical digit or 0 on error
+ */
+char iToH(uint8_t i) {
+	//if(!c_assert(i>=0 && i<=15)) return 0;
+	if(i < 10) return '0' + i;
+	else return 'A' + i - 10;
+}
+
+/**
+ * Computes the length of a C string.
+ * @param arr C array
+ * @return length of array, 0 if it cannot be computed
+*/
+int getSize(char arr[])
+{
+    int count = 0;
+    
+    int i = 0;
+    while (*(arr + i) != '\0')
+    {
+        count++;
+        i++;
+    }
+    
+    return count;
+}
+
+void partThree()
+{
+	// TODO: taking user input
+	
+	char *end;
+	char *input = "75";
+	uint32_t num = (uint32_t)strtol(input, &end, 10);
+	
+	char bitStr[] = { '0', '0', '0', '0', '0', '0', '0', '0', '\0' }; 
+	for (int i = 0; i < 8; i++)
+	{
+		int testBit = num & 0x01;
+		if (testBit == 0x01)
+		{
+			bitStr[8 - i - 1] = '1';
+		}
+		num = num >> 1;
+	}
+	
+	printf("OH NO: %s\n", bitStr);
+	
+	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
+	for (int i = 0; i < 8; i++)
+	{
+		if (bitStr[i] == '0')
+		{
+			if (i < 4)
+			{
+				LPC_GPIO2->FIODIR |= (1 << pinMap[i]);
+				LPC_GPIO2->FIOCLR |= (1 << pinMap[i]);
+			}
+			else
+			{
+				LPC_GPIO1->FIODIR |= (1 << pinMap[i]);
+				LPC_GPIO1->FIOCLR |= (1 << pinMap[i]);
+			}
+		}
+	}
+}
+
 int main()
 {
 	printf("Hello, world!\n");
 	
-	partOne();
+	//partOne();
 	//partTwo();
+	partThree();
 }
