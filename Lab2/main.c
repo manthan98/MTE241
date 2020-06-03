@@ -112,41 +112,73 @@ int getSize(char arr[])
 
 void partThree()
 {
-	// TODO: taking user input
-	
-	char *end;
-	char *input = "75";
-	uint32_t num = (uint32_t)strtol(input, &end, 10);
-	
-	char bitStr[] = { '0', '0', '0', '0', '0', '0', '0', '0', '\0' }; 
-	for (int i = 0; i < 8; i++)
+	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
+	for (int i = 0; i < (sizeof(pinMap) / sizeof(int)); i++)
 	{
-		int testBit = num & 0x01;
-		if (testBit == 0x01)
+		if (i < 5)
 		{
-			bitStr[8 - i - 1] = '1';
+			LPC_GPIO2->FIODIR |= (1 << pinMap[i]);
 		}
-		num = num >> 1;
+		else
+		{
+			LPC_GPIO1->FIODIR |= (1 << pinMap[i]);
+		}
 	}
 	
-	printf("OH NO: %s\n", bitStr);
-	
-	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
-	for (int i = 0; i < 8; i++)
+	while (true)
 	{
-		if (bitStr[i] == '0')
+		char *input = malloc(3 * sizeof(char));
+		printf("Enter a number:\n");
+		scanf("%s", input);
+		
+		// For debugging only
+		printf("Your selection: %s\n", input);
+		
+		char *end;
+		uint32_t num = (uint32_t)strtol(input, &end, 10);
+		
+		char bitStr[] = { '0', '0', '0', '0', '0', '0', '0', '0', '\0' }; 
+		for (int i = 0; i < 8; i++)
 		{
-			if (i < 4)
+			int testBit = num & 0x01;
+			if (testBit == 0x01)
 			{
-				LPC_GPIO2->FIODIR |= (1 << pinMap[i]);
-				LPC_GPIO2->FIOCLR |= (1 << pinMap[i]);
+				bitStr[8 - i - 1] = '1';
+			}
+			num = num >> 1;
+		}
+		
+		// For debugging only
+		printf("Binary output: %s\n", bitStr);
+		
+		//int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
+		for (int i = 0; i < 8; i++)
+		{
+			if (bitStr[i] == '0')
+			{
+				if (i < 5)
+				{
+					LPC_GPIO2->FIOCLR |= (1 << pinMap[i]);
+				}
+				else
+				{
+					LPC_GPIO1->FIOCLR |= (1 << pinMap[i]);
+				}
 			}
 			else
 			{
-				LPC_GPIO1->FIODIR |= (1 << pinMap[i]);
-				LPC_GPIO1->FIOCLR |= (1 << pinMap[i]);
+				if (i < 5)
+				{
+					LPC_GPIO2->FIOSET |= (1 << pinMap[i]);
+				}
+				else
+				{
+					LPC_GPIO1->FIOSET |= (1 << pinMap[i]);
+				}
 			}
 		}
+		
+		free(input);
 	}
 }
 
