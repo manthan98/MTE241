@@ -5,27 +5,31 @@
 #include <math.h>
 #include <lpc17xx.h>
 
+#define PART 1
+
 void partOne()
 {
-	LPC_GPIO1->FIODIR |= (1 << 28);
-	LPC_GPIO1->FIOCLR |= (1 << 28);
+	LPC_GPIO2->FIODIR |= (1 << 6);
+	LPC_GPIO2->FIOCLR |= (1 << 6);
 	
 	LPC_GPIO2->FIODIR |= (0 << 10);
 	
 	while (true)
 	{
 		uint32_t pushButtonInput = (LPC_GPIO2->FIOPIN & (1 << 10));
+		
+		// For debugging
 		printf("PB: %d\n", pushButtonInput);
 		
 		uint32_t activeLow = 0x00000000;
 		if (pushButtonInput == activeLow)
 		{
-			LPC_GPIO1->FIOSET |= (1 << 28); // Turn on the LED
+			LPC_GPIO2->FIOSET |= (1 << 6); // Turn on the LED
 		}
 		
 		if (pushButtonInput == (1 << 10))
 		{
-			LPC_GPIO1->FIOCLR |= (1 << 28); // Turn off the LED
+			LPC_GPIO2->FIOCLR |= (1 << 6); // Turn off the LED
 		}
 	}
 }
@@ -42,6 +46,7 @@ void partTwo()
 		
 		uint32_t activeLow = 0x00000000;
 		char *direction = malloc(6*sizeof(char));
+		
 		if (A == activeLow) 
 		{
 			direction = "North\0";
@@ -110,7 +115,6 @@ void partThree()
 		// For debugging only
 		printf("Binary output: %s\n", bitStr);
 		
-		//int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
 		for (int i = 0; i < 8; i++)
 		{
 			if (bitStr[i] == '0')
@@ -172,13 +176,24 @@ void partFour()
 	}
 }
 
-int main()
-{
-	printf("Hello, world!\n");
-	
-	//partOne();
-	//partTwo();
-	//partThree();
-	
-	partFour();
-}
+#if PART == 1
+	int main() 
+	{
+		partOne();
+	}
+#elif PART == 2
+	int main() 
+	{
+		partTwo();
+	}
+#elif PART == 3
+	int main() 
+	{
+		partThree();
+	}
+#else
+	int main() 
+	{
+		partFour();
+	}
+#endif
