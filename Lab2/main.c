@@ -9,9 +9,11 @@
 
 void partOne()
 {
+	// Turn off the left-most LED
 	LPC_GPIO2->FIODIR |= (1 << 6);
 	LPC_GPIO2->FIOCLR |= (1 << 6);
 	
+	// Enable writes to the pushbutton pin
 	LPC_GPIO2->FIODIR |= (0 << 10);
 	
 	while (true)
@@ -21,8 +23,8 @@ void partOne()
 		// For debugging
 		printf("PB: %d\n", pushButtonInput);
 		
-		uint32_t activeLow = 0x00000000;
-		if (pushButtonInput == activeLow)
+		// Test for an active low (pushbutton is pressed)
+		if (pushButtonInput == 0)
 		{
 			LPC_GPIO2->FIOSET |= (1 << 6); // Turn on the LED
 		}
@@ -76,6 +78,7 @@ void partTwo()
 
 void partThree()
 {
+	// Enable writes for at all LED pins
 	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
 	for (int i = 0; i < (sizeof(pinMap) / sizeof(int)); i++)
 	{
@@ -104,6 +107,7 @@ void partThree()
 		char bitStr[] = { '0', '0', '0', '0', '0', '0', '0', '0', '\0' }; 
 		for (int i = 0; i < 8; i++)
 		{
+			// Determine if the bit is set
 			int testBit = num & 0x01;
 			if (testBit == 0x01)
 			{
@@ -117,6 +121,7 @@ void partThree()
 		
 		for (int i = 0; i < 8; i++)
 		{
+			// If the bit is not set, turn off the corresponding LED (vice versa)
 			if (bitStr[i] == '0')
 			{
 				if (i < 5)
@@ -147,13 +152,16 @@ void partThree()
 
 void partFour()
 {
+	// Turn on power for ADC
 	LPC_SC->PCONP |= (1 << 12);
+	
+	// Setup AD function for pin 7
 	LPC_PINCON->PINSEL1 &= ~(3 << 18);
 	LPC_PINCON->PINSEL1 |= (1 << 18);
 	
 	LPC_ADC->ADCR &= (0 << 16); // Clear burst mode bit
 	
-	// Set pin 7 function to AD0.2
+	// Set AD channel (AD0.2), sample rate, and enable circuitry
 	LPC_ADC->ADCR |= (1 << 2) | (4 << 8) | (1 << 21);
 	
 	while (true)
