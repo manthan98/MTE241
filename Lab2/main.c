@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 #include <lpc17xx.h>
 
 void partOne()
@@ -66,48 +67,6 @@ void partTwo()
 		
 		printf("Direction: %s, Pressed: %s\n", direction, pressed ? "Yes" : "No");
 	}
-}
-
-/**
- * Converts a hexademical digit to its integer value.
- * @param h ascii character representing a hexadecimal digit
- * @return value of hexadecimal digit or -1 on error
- */
-int8_t hToI(char h) {
-	//if(!c_assert((h>='0' && h<='9') || (h>='A' && h<='F'))) return -1;
-	if(h>='0' && h<='9') return h - '0';
-	if(h>='A' && h<='F') return h - 'A' + 10;
-    return 0;
-}
-
-/**
- * Converts an integer to its hexademical character representation.
- * @param i integer in range [0,15]
- * @return ascii code of hexademical digit or 0 on error
- */
-char iToH(uint8_t i) {
-	//if(!c_assert(i>=0 && i<=15)) return 0;
-	if(i < 10) return '0' + i;
-	else return 'A' + i - 10;
-}
-
-/**
- * Computes the length of a C string.
- * @param arr C array
- * @return length of array, 0 if it cannot be computed
-*/
-int getSize(char arr[])
-{
-    int count = 0;
-    
-    int i = 0;
-    while (*(arr + i) != '\0')
-    {
-        count++;
-        i++;
-    }
-    
-    return count;
 }
 
 void partThree()
@@ -182,11 +141,44 @@ void partThree()
 	}
 }
 
+void partFour()
+{
+	LPC_SC->PCONP |= (1 << 12);
+	LPC_PINCON->PINSEL1 &= ~(3 << 18);
+	LPC_PINCON->PINSEL1 |= (1 << 18);
+	
+	LPC_ADC->ADCR &= (0 << 16); // Clear burst mode bit
+	
+	// Set pin 7 function to AD0.2
+	LPC_ADC->ADCR |= (1 << 2) | (4 << 8) | (1 << 21);
+	
+	while (true)
+	{
+		LPC_ADC->ADCR |= (1 << 24);
+	
+		while ((LPC_ADC->ADGDR & (1u << 31)) == 0);
+		
+		uint32_t totalSum = 0;
+		for (int i = 4; i <= 15; i++)
+		{
+			uint32_t val = LPC_ADC->ADGDR & (1 << i);
+			if (val != 0)
+			{
+				totalSum += pow(2, i);
+			}
+		}
+		
+		printf("AD converter value: %d\n", totalSum);
+	}
+}
+
 int main()
 {
 	printf("Hello, world!\n");
 	
 	//partOne();
 	//partTwo();
-	partThree();
+	//partThree();
+	
+	partFour();
 }
