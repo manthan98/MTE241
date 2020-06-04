@@ -5,7 +5,7 @@
 #include <math.h>
 #include <lpc17xx.h>
 
-#define PART 1
+#define PART 4
 
 void partOne()
 {
@@ -159,7 +159,7 @@ void partFour()
 	LPC_PINCON->PINSEL1 &= ~(3 << 18);
 	LPC_PINCON->PINSEL1 |= (1 << 18);
 	
-	LPC_ADC->ADCR &= (0 << 16); // Clear burst mode bit
+	LPC_ADC->ADCR &= ~(0xFF); // Clear SEL bits
 	
 	// Set AD channel (AD0.2), sample rate, and enable circuitry
 	LPC_ADC->ADCR |= (1 << 2) | (4 << 8) | (1 << 21);

@@ -145,6 +145,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>((LPC_ADC_TypeDef *) ((0x40000000UL) + 0x34000) )-&gt;ADGDR</ItemText>
         </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>((LPC_ADC_TypeDef *) ((0x40000000UL) + 0x34000) )-&gt;ADCR</ItemText>
+        </Ww>
       </WatchWindow1>
       <ToolboxButtons>
         <Wi>
