@@ -161,7 +161,7 @@ void partFour()
 	
 	LPC_ADC->ADCR &= ~(0xFF); // Clear SEL bits
 	
-	// Set AD channel (AD0.2), sample rate, and enable circuitry
+	// Set AD channel (AD0.2), clock divisor, and enable circuitry
 	LPC_ADC->ADCR |= (1 << 2) | (4 << 8) | (1 << 21);
 	
 	while (true)
@@ -170,17 +170,9 @@ void partFour()
 	
 		while ((LPC_ADC->ADGDR & (1u << 31)) == 0);
 		
-		uint32_t totalSum = 0;
-		for (int i = 4; i <= 15; i++)
-		{
-			uint32_t val = LPC_ADC->ADGDR & (1 << i);
-			if (val != 0)
-			{
-				totalSum += pow(2, i);
-			}
-		}
+		uint32_t result = (LPC_ADC->ADGDR >> 4) & 0xFFF;
 		
-		printf("AD converter value: %d\n", totalSum);
+		printf("AD converter value: %d\n", result);
 	}
 }
 
