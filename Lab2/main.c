@@ -5,7 +5,8 @@
 #include <math.h>
 #include <lpc17xx.h>
 
-#define PART 4
+#define PART 1
+#define DEBUG_MODE false
 
 void partOne()
 {
@@ -13,15 +14,16 @@ void partOne()
 	LPC_GPIO2->FIODIR |= (1 << 6);
 	LPC_GPIO2->FIOCLR |= (1 << 6);
 	
-	// Enable writes to the pushbutton pin
+	// Enable input at the pushbutton pin
 	LPC_GPIO2->FIODIR |= (0 << 10);
 	
 	while (true)
 	{
 		uint32_t pushButtonInput = (LPC_GPIO2->FIOPIN & (1 << 10));
 		
-		// For debugging
-		printf("PB: %d\n", pushButtonInput);
+		#if DEBUG_MODE
+			printf("PB: %d\n", pushButtonInput);
+		#endif
 		
 		// Test for an active low (pushbutton is pressed)
 		if (pushButtonInput == 0)
@@ -78,7 +80,7 @@ void partTwo()
 
 void partThree()
 {
-	// Enable writes for at all LED pins
+	// Enable input-output at all LED pins
 	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
 	for (int i = 0; i < (sizeof(pinMap) / sizeof(int)); i++)
 	{
@@ -98,55 +100,50 @@ void partThree()
 		printf("Enter a number:\n");
 		scanf("%s", input);
 		
-		// For debugging only
-		printf("Your selection: %s\n", input);
+		#if DEBUG_MODE
+			printf("Your selection: %s\n", input);
+		#endif
 		
 		char *end;
 		uint32_t num = (uint32_t)strtol(input, &end, 10);
 		
-		char bitStr[] = { '0', '0', '0', '0', '0', '0', '0', '0', '\0' }; 
 		for (int i = 0; i < 8; i++)
 		{
 			// Determine if the bit is set
 			int testBit = num & 0x01;
+			
+			// LSB corresponds to left-most LED
+			int ledIdx = 8 - i - 1;
+			
+			// Turn the LED ON if bit is set (vice-versa)
 			if (testBit == 0x01)
 			{
-				bitStr[8 - i - 1] = '1';
-			}
-			num = num >> 1;
-		}
-		
-		// For debugging only
-		printf("Binary output: %s\n", bitStr);
-		
-		for (int i = 0; i < 8; i++)
-		{
-			// If the bit is not set, turn off the corresponding LED (vice versa)
-			if (bitStr[i] == '0')
-			{
-				if (i < 5)
+				if (ledIdx < 5)
 				{
-					LPC_GPIO2->FIOCLR |= (1 << pinMap[i]);
+					LPC_GPIO2->FIOSET |= (1 << pinMap[ledIdx]);
 				}
 				else
 				{
-					LPC_GPIO1->FIOCLR |= (1 << pinMap[i]);
+					LPC_GPIO1->FIOSET |= (1 << pinMap[ledIdx]);
 				}
 			}
 			else
 			{
-				if (i < 5)
+				if (ledIdx < 5)
 				{
-					LPC_GPIO2->FIOSET |= (1 << pinMap[i]);
+					LPC_GPIO2->FIOCLR |= (1 << pinMap[ledIdx]);
 				}
 				else
 				{
-					LPC_GPIO1->FIOSET |= (1 << pinMap[i]);
+					LPC_GPIO1->FIOCLR |= (1 << pinMap[ledIdx]);
 				}
 			}
+			
+			num = num >> 1;
 		}
 		
 		free(input);
+		free(end);
 	}
 }
 
@@ -156,6 +153,7 @@ void partFour()
 	LPC_SC->PCONP |= (1 << 12);
 	
 	// Setup AD function for pin 7
+	// Default function is P0.25 which is controlled by pins 18, 19 of PINSEL1
 	LPC_PINCON->PINSEL1 &= ~(3 << 18);
 	LPC_PINCON->PINSEL1 |= (1 << 18);
 	
@@ -166,13 +164,16 @@ void partFour()
 	
 	while (true)
 	{
+		// Start conversion
 		LPC_ADC->ADCR |= (1 << 24);
 	
 		while ((LPC_ADC->ADGDR & (1u << 31)) == 0);
 		
 		uint32_t result = (LPC_ADC->ADGDR >> 4) & 0xFFF;
 		
-		printf("AD converter value: %d\n", result);
+		float voltageValue = result / (4095 / 3.3);
+		
+		printf("AD converter value: %f\n", voltageValue);
 	}
 }
 
