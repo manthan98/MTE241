@@ -22,20 +22,6 @@ void turnOffLEDs()
 
 void t1(void *arg)
 {
-	// Enable input-output at all LED pins
-	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
-	for (int i = 0; i < (sizeof(pinMap) / sizeof(int)); i++)
-	{
-		if (i < 5)
-		{
-			LPC_GPIO2->FIODIR |= (1 << pinMap[i]);
-		}
-		else
-		{
-			LPC_GPIO1->FIODIR |= (1 << pinMap[i]);
-		}
-	}
-	
 	while (true)
 	{
 		uint32_t A = (LPC_GPIO1->FIOPIN & (1 << 23)); // North
@@ -44,40 +30,55 @@ void t1(void *arg)
 		uint32_t D = (LPC_GPIO1->FIOPIN & (1 << 25)); // South
 		uint32_t ctr = (LPC_GPIO1->FIOPIN & (1 << 20)); // Press/release
 		
-		uint32_t activeLow = 0x00000000;
-		char *direction = malloc(6*sizeof(char));
-		
-		turnOffLEDs();
+		uint32_t activeLow = 0;
 		
 		if (A == activeLow) 
 		{
 			// 0001
-			LPC_GPIO2->FIOSET |= (1 << 2);
-		} 
-		else if (B == activeLow)
+			LPC_GPIO1->FIOSET |= (1 << 28);
+		}
+		else
+		{
+			LPC_GPIO1->FIOCLR |= (1 << 28);
+		}
+		
+		if (B == activeLow)
 		{
 			// 0010
-			LPC_GPIO2->FIOSET |= (1 << 3);
+			LPC_GPIO1->FIOSET |= (1 << 29);
 		}
-		else if (C == activeLow)
+		else
+		{
+			LPC_GPIO1->FIOCLR |= (1 << 29);
+		}
+		
+		if (C == activeLow)
 		{
 			// 0100
-			LPC_GPIO2->FIOSET |= (1 << 4);
+			LPC_GPIO1->FIOSET |= (1ul << 31);
 		}
-		else if (D == activeLow)
+		else
+		{
+			LPC_GPIO1->FIOCLR |= (1ul << 31);
+		}
+		
+		if (D == activeLow)
 		{
 			// 0011
-			LPC_GPIO2->FIOSET |= (1 << 3);
-			LPC_GPIO2->FIOSET |= (1 << 2);
+			LPC_GPIO1->FIOSET |= ((1 << 28) | (1 << 29));
+		}
+		else if (B != activeLow)
+		{
+			LPC_GPIO1->FIOCLR |= ((1 << 28) | (1 << 29));
 		}
 		
 		if (ctr == activeLow)
 		{
-			LPC_GPIO2->FIOSET |= (1 << 6);
+			LPC_GPIO2->FIOSET |= (1 << 3);
 		}
 		else
 		{
-			LPC_GPIO2->FIOCLR |= (1 << 6);
+			LPC_GPIO2->FIOCLR |= (1 << 3);
 		}
 		
 		osThreadYield();
@@ -87,8 +88,8 @@ void t1(void *arg)
 void t2(void *arg)
 {
 	// Turn off the left-most LED
-	LPC_GPIO1->FIODIR |= (1 << 28);
-	LPC_GPIO1->FIOCLR |= (1 << 28);
+	LPC_GPIO2->FIODIR |= (1 << 6);
+	LPC_GPIO2->FIOCLR |= (1 << 6);
 	
 	// Enable input at the pushbutton pin
 	LPC_GPIO2->FIODIR |= (0 << 10);
@@ -100,12 +101,12 @@ void t2(void *arg)
 		// Test for an active low (pushbutton is pressed)
 		if (pushButtonInput == 0)
 		{
-			LPC_GPIO1->FIOSET |= (1 << 28); // Turn on the LED
+			LPC_GPIO2->FIOSET |= (1 << 6); // Turn on the LED
 		}
 		
 		if (pushButtonInput == (1 << 10))
 		{
-			LPC_GPIO1->FIOCLR |= (1 << 28); // Turn off the LED
+			LPC_GPIO2->FIOCLR |= (1 << 6); // Turn off the LED
 		}
 		
 		osThreadYield();
@@ -146,6 +147,22 @@ void t3(void *arg)
 
 
 int main(void) {
+	// Enable input-output at all LED pins
+	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
+	for (int i = 0; i < (sizeof(pinMap) / sizeof(int)); i++)
+	{
+		if (i < 5)
+		{
+			LPC_GPIO2->FIODIR |= (1 << pinMap[i]);
+		}
+		else
+		{
+			LPC_GPIO1->FIODIR |= (1 << pinMap[i]);
+		}
+	}
+	
+	turnOffLEDs();
+	
 	osKernelInitialize();
 	osThreadNew(t1, NULL, NULL);
 	osThreadNew(t2, NULL, NULL);
