@@ -31,41 +31,49 @@ void client(void *arg)
 	{
 		MQData_t data;
 		osStatus_t status;
-	
-		uint32_t randVal = next_event();
-		uint32_t ticks = osKernelGetTickFreq() * randVal;
-		uint32_t delayVal = (ticks / 9) >> 16;
-		
-		osDelay(delayVal);
-		
-		data.msg = serverIndex == 0 ? 1U : 2U;
-		status = osMessageQueuePut(serverIndex == 0 ? mq1 : mq2, &data, 0U, 0U);
 		
 		if (serverIndex == 0)
 		{
+			uint32_t randVal = next_event();
+			uint32_t ticks = osKernelGetTickFreq() * randVal;
+			uint32_t delayVal = (ticks / 9) >> 16;
+			
+			osDelay(delayVal);
+			
+			data.msg = 1U;
+			status = osMessageQueuePut(mq1, &data, 0U, 0U);
+			
 			if (status == osOK)
 			{
 				mq1Monitor.sent++;
 			}
-			else
+			else if (status == osErrorResource)
 			{
 				mq1Monitor.overflows++;
 			}
 		}
 		else
 		{
+			uint32_t randVal = next_event();
+			uint32_t ticks = osKernelGetTickFreq() * randVal;
+			uint32_t delayVal = (ticks / 9) >> 16;
+			
+			osDelay(delayVal);
+			
+			data.msg = 2U;
+			status = osMessageQueuePut(mq2, &data, 0U, 0U);
+			
 			if (status == osOK)
 			{
 				mq2Monitor.sent++;
 			}
-			else
+			else if (status == osErrorResource)
 			{
 				mq2Monitor.overflows++;
 			}
 		}
 		
 		serverIndex = (serverIndex + 1) % 2;
-		
 		osThreadYield();
 	}
 }
