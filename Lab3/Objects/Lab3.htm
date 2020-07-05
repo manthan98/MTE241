@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\Lab3.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\Lab3.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Thu Jun 25 21:25:00 2020
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sun Jul 05 15:30:30 2020
 <BR><P>
 <H3>Maximum Stack Usage =         96 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -89,7 +89,7 @@ Function Pointers
  <LI><a href="#[39]">svcRtxThreadNew</a> from rtx_thread.o(.text.svcRtxThreadNew) referenced from rtx_thread.o(.text.osThreadNew)
  <LI><a href="#[3a]">svcRtxThreadYield</a> from rtx_thread.o(.text.svcRtxThreadYield) referenced from rtx_thread.o(.text.osThreadYield)
  <LI><a href="#[40]">t1</a> from main.o(i.t1) referenced from main.o(i.main)
- <LI><a href="#[41]">t2</a> from main.o(i.t2) referenced from main.o(i.main)
+ <LI><a href="#[41]">t2v2</a> from main.o(i.t2v2) referenced from main.o(i.main)
  <LI><a href="#[42]">t3</a> from main.o(i.t3) referenced from main.o(i.main)
 </UL>
 <P>
@@ -737,7 +737,7 @@ Global Symbols
 
 <P><STRONG><a name="[96]"></a>osThreadYield</STRONG> (Thumb, 36 bytes, Stack size 0 bytes, rtx_thread.o(.text.osThreadYield))
 <BR><BR>[Called By]<UL><LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;t3
-<LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;t2
+<LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;t2v2
 <LI><a href="#[40]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;t1
 </UL>
 
@@ -823,7 +823,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTInit
 </UL>
 
-<P><STRONG><a name="[2d]"></a>main</STRONG> (Thumb, 118 bytes, Stack size 40 bytes, main.o(i.main))
+<P><STRONG><a name="[2d]"></a>main</STRONG> (Thumb, 128 bytes, Stack size 40 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = main &rArr; turnOffLEDs
 </UL>
 <BR>[Calls]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osThreadNew
@@ -857,7 +857,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> main.o(i.main)
 </UL>
-<P><STRONG><a name="[41]"></a>t2</STRONG> (Thumb, 78 bytes, Stack size 0 bytes, main.o(i.t2))
+<P><STRONG><a name="[41]"></a>t2v2</STRONG> (Thumb, 120 bytes, Stack size 0 bytes, main.o(i.t2v2))
 <BR><BR>[Calls]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osThreadYield
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> main.o(i.main)

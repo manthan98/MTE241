@@ -113,6 +113,45 @@ void t2(void *arg)
 	}
 }
 
+bool prevLEDState;
+bool prevButtonState;
+
+void t2v2(void *arg)
+{
+	// Turn off the left-most LED
+	LPC_GPIO2->FIODIR |= (1 << 6);
+	LPC_GPIO2->FIOCLR |= (1 << 6);
+	
+	// Enable input at the pushbutton pin
+	LPC_GPIO2->FIODIR |= (0 << 10);
+	
+	while (true)
+	{
+		uint32_t pushButtonInput = (LPC_GPIO2->FIOPIN & (1 << 10));
+		
+		if (prevButtonState && pushButtonInput != 0)
+		{
+			if (prevLEDState)
+			{
+				LPC_GPIO2->FIOCLR |= (1 << 6); // Turn off the LED
+			}
+			else
+			{
+				LPC_GPIO2->FIOSET |= (1 << 6); // Turn on the LED
+			}
+			
+			prevLEDState = !prevLEDState;
+			prevButtonState = false;
+		}
+		else if (!prevButtonState && pushButtonInput == 0)
+		{
+			prevButtonState = true;
+		}
+		
+		osThreadYield();
+	}
+}
+
 void t3(void *arg)
 {
 	// Turn on power for ADC
@@ -145,7 +184,6 @@ void t3(void *arg)
 	}
 }
 
-
 int main(void) {
 	// Enable input-output at all LED pins
 	int pinMap[] = { 6, 5, 4, 3, 2, 31, 29, 28 };
@@ -161,11 +199,14 @@ int main(void) {
 		}
 	}
 	
+	prevButtonState = false;
+	prevLEDState = false;
+	
 	turnOffLEDs();
 	
 	osKernelInitialize();
 	osThreadNew(t1, NULL, NULL);
-	osThreadNew(t2, NULL, NULL);
+	osThreadNew(t2v2, NULL, NULL);
 	osThreadNew(t3, NULL, NULL);
 	osKernelStart();
 }
