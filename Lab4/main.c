@@ -6,10 +6,12 @@
 
 #define MSG_COUNT 10
 
+// To send messages to queues
 typedef struct {
 	uint8_t msg;
 } MQData_t;
 
+// To monitor each queue
 typedef struct {
 	int sent;
 	int received;
@@ -18,6 +20,9 @@ typedef struct {
 
 osMessageQueueId_t mq1;
 osMessageQueueId_t mq2;
+
+uint32_t serverOneMQ;
+uint32_t serverTwoMQ;
 
 MQMonitor_t mq1Monitor;
 MQMonitor_t mq2Monitor;
@@ -92,10 +97,10 @@ void server(void *arg)
 			
 		osDelay(delayVal);
 		
-		status = osMessageQueueGet(mq == 1 ? mq1 : mq2, &data, NULL, osWaitForever);
-		
 		if (mq == 1)
 		{
+			status = osMessageQueueGet(mq1, &data, NULL, osWaitForever);
+			
 			if (status == osOK)
 			{
 				mq1Monitor.received++;
@@ -103,6 +108,8 @@ void server(void *arg)
 		}
 		else
 		{
+			status = osMessageQueueGet(mq2, &data, NULL, osWaitForever);
+			
 			if (status == osOK)
 			{
 				mq2Monitor.received++;
@@ -129,23 +136,16 @@ void systemMonitor(void *arg)
 	}
 }
 
-int main()
+void setup()
 {
-	osKernelInitialize();
-	
 	mq1 = osMessageQueueNew(MSG_COUNT, sizeof(MQData_t), NULL);
 	mq2 = osMessageQueueNew(MSG_COUNT, sizeof(MQData_t), NULL);
 	
 	serverIndex = 0;
 	prevTime = 0;
 	
-	osThreadNew(client, NULL, NULL);
-	
-	uint32_t serverOneMQ = 1;
-	uint32_t serverTwoMQ = 2;
-	
-	osThreadNew(server, &serverOneMQ, NULL);
-	osThreadNew(server, &serverTwoMQ, NULL);
+	serverOneMQ = 1;
+	serverTwoMQ = 2;
 	
 	mq1Monitor.sent = 0;
 	mq1Monitor.received = 0;
@@ -154,8 +154,15 @@ int main()
 	mq2Monitor.sent = 0;
 	mq2Monitor.received = 0;
 	mq2Monitor.overflows = 0;
-	
+}
+
+int main()
+{
+	osKernelInitialize();
+	setup();
+	osThreadNew(client, NULL, NULL);
+	osThreadNew(server, &serverOneMQ, NULL);
+	osThreadNew(server, &serverTwoMQ, NULL);
 	osThreadNew(systemMonitor, NULL, NULL);
-	
 	osKernelStart();
 }
