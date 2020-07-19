@@ -34,17 +34,17 @@ void client(void *arg)
 {
 	MQData_t data;
 	osStatus_t status;
-		
-	uint32_t randVal = next_event();
-	uint32_t ticks = osKernelGetTickFreq() * randVal;
-	uint32_t delayVal = (ticks / 9) >> 16;
 	
 	while (1)
 	{
+		uint32_t randVal = next_event();
+		uint32_t ticks = osKernelGetTickFreq() * randVal;
+		uint32_t delayVal = (ticks / 9) >> 16;
+		
+		osDelay(delayVal);
+		
 		if (serverIndex == 0)
 		{
-			osDelay(delayVal);
-			
 			data.msg = 1U;
 			status = osMessageQueuePut(mq1, &data, 0U, 0U);
 			
@@ -59,8 +59,6 @@ void client(void *arg)
 		}
 		else
 		{
-			osDelay(delayVal);
-			
 			data.msg = 2U;
 			status = osMessageQueuePut(mq2, &data, 0U, 0U);
 			
@@ -84,13 +82,14 @@ void server(void *arg)
 	MQData_t data;
 	osStatus_t status;
 	uint32_t mq = *(uint32_t *)arg;
-		
-	uint32_t randVal = next_event();
-	uint32_t ticks = osKernelGetTickFreq() * randVal;
-	uint32_t delayVal = (ticks / 10) >> 16;
 	
 	while (1)
 	{
+		uint32_t randVal = next_event();
+		uint32_t ticks = osKernelGetTickFreq() * randVal;
+		uint32_t seconds = ticks / 10;
+		uint32_t delayVal = seconds >> 16;
+		
 		osDelay(delayVal);
 		
 		if (mq == 1)
@@ -120,7 +119,7 @@ void systemMonitor(void *arg)
 {
 	while (1)
 	{
-		uint32_t time = osKernelGetTickCount() / osKernelGetTickFreq();
+		uint32_t time = osKernelGetTickCount() / osKernelGetTickFreq(); // Time in seconds
 		
 		if (time % 1 == 0 && time >= 1 && time != prevTime)
 		{
