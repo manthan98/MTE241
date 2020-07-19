@@ -32,17 +32,17 @@ uint32_t prevTime;
 
 void client(void *arg)
 {
+	MQData_t data;
+	osStatus_t status;
+		
+	uint32_t randVal = next_event();
+	uint32_t ticks = osKernelGetTickFreq() * randVal;
+	uint32_t delayVal = (ticks / 9) >> 16;
+	
 	while (1)
 	{
-		MQData_t data;
-		osStatus_t status;
-		
 		if (serverIndex == 0)
 		{
-			uint32_t randVal = next_event();
-			uint32_t ticks = osKernelGetTickFreq() * randVal;
-			uint32_t delayVal = (ticks / 9) >> 16;
-			
 			osDelay(delayVal);
 			
 			data.msg = 1U;
@@ -59,10 +59,6 @@ void client(void *arg)
 		}
 		else
 		{
-			uint32_t randVal = next_event();
-			uint32_t ticks = osKernelGetTickFreq() * randVal;
-			uint32_t delayVal = (ticks / 9) >> 16;
-			
 			osDelay(delayVal);
 			
 			data.msg = 2U;
@@ -85,16 +81,16 @@ void client(void *arg)
 
 void server(void *arg)
 {
+	MQData_t data;
+	osStatus_t status;
+	uint32_t mq = *(uint32_t *)arg;
+		
+	uint32_t randVal = next_event();
+	uint32_t ticks = osKernelGetTickFreq() * randVal;
+	uint32_t delayVal = (ticks / 10) >> 16;
+	
 	while (1)
 	{
-		MQData_t data;
-		osStatus_t status;
-		uint32_t mq = *(uint32_t *)arg;
-		
-		uint32_t randVal = next_event();
-		uint32_t ticks = osKernelGetTickFreq() * randVal;
-		uint32_t delayVal = (ticks / 10) >> 16;
-			
 		osDelay(delayVal);
 		
 		if (mq == 1)
